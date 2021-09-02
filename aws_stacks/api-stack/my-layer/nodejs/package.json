@@ -1,0 +1,13 @@
+{
+  "name": "nodejs",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "@dazn/lambda-powertools-logger": "^1.28.1",
+    "@line/bot-sdk": "^7.3.0",
+    "https": "^1.0.0",
+    "typeorm": "^0.2.30",
+    "typeorm-aurora-data-api-driver": "^1.4.0"
+  }
+}

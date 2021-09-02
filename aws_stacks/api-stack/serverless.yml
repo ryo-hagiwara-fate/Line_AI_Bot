@@ -1,0 +1,64 @@
+app: ${self:custom.appName}
+service: ${self:custom.appName}-api
+custom:
+  stage: ${opt:stage, self:provider.stage}
+  stageEnv: ${opt:stageEnv, self:provider.stage}
+  appName: line-ai-bot
+  accessToken: ${opt:accessToken}
+  userId: ${opt:userId}
+  s3BucketName: ${opt:s3BucketName}
+plugins:
+  - serverless-plugin-tracing
+  - serverless-plugin-warmup
+  - serverless-cloudformation-sub-variables
+
+provider:
+  name: aws
+  runtime: nodejs12.x
+  tracing: true
+  environment:
+    ACCESS_TOKEN: ${self:custom.accessToken}
+    USER_ID: ${self:custom.userId}
+    S3_BUCKET_URL: ${self:custom.s3BucketName}
+  stage: dev
+  region: ap-northeast-1
+  stackName: ${self:custom.stageEnv}-${self:custom.stage}-${self:custom.appName}-api-stack
+  iamRoleStatements:
+    # Lambdaがログを出力するための権限
+    - Effect: Allow
+      Resource:
+        - "*"
+      Action:
+        - logs:CreateLogGroup
+        - logs:CreateLogStream
+        - logs:PutLogEvents
+    # Xray
+    - Effect: Allow
+      Resource: "*"
+      Action:
+        - xray:PutTraceSegments # X-Rayにセグメントドキュメントをアップロードする権限を付与する
+        - xray:PutTelemetryRecords # X-Rayにテレメトリをアップロードする権限を付与する
+    # system manager parameter store
+    - Effect: "Allow"
+      Action:
+        - "ssm:GetParameter"
+      Resource: "*"
+    - Effect: Allow
+      Resource:
+        - "*"
+      Action:
+        - lambda:InvokeFunction
+    - Effect: Allow
+      Resource:
+        - "*"
+      Action:
+        - "apigateway:*"
+
+functions: ${file(resources/lambda.yml)}
+
+resources: 
+  - ${file(resources/api.yml)}
+
+layers:
+  mylayer:
+    path: my-layer

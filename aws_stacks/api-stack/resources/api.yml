@@ -1,0 +1,89 @@
+Resources:
+  LineAIBotAPI:
+    Type: AWS::ApiGateway::RestApi
+    Properties:
+      Name: ${self:custom.stageEnv}-${self:custom.stage}-aim-auth-api
+
+  LineAIBotAPIDeployment:
+    Type: AWS::ApiGateway::Deployment
+    Properties:
+      RestApiId: !Ref LineAIBotAPI
+    DependsOn:
+      - LineAIBotAPIMethod
+
+  LineAIBotAPIResource:
+    Type: "AWS::ApiGateway::Resource"
+    Properties:
+      RestApiId: !Ref LineAIBotAPI
+      ParentId: !GetAtt LineAIBotAPI.RootResourceId
+      PathPart: "AeonUserMigration"
+
+  LineAIBotAPIMethod:
+    Type: "AWS::ApiGateway::Method"
+    # DependsOn: LambdaPermission
+    Properties:
+      RestApiId: !Ref LineAIBotAPI
+      ResourceId: !Ref LineAIBotAPIResource
+      HttpMethod: "POST"
+      AuthorizationType: "AWS_IAM"
+      Integration:
+        Type: "AWS_PROXY"
+        Uri: 
+          !Join
+            - ""
+            - - "arn:aws:apigateway"
+              - ":"
+              - !Ref AWS::Region
+              - ":"
+              - "lambda:path/2015-03-31/functions/"
+              - !GetAtt
+                - ExecuteAIBotLambdaFunction
+                - Arn
+              - "/invocations"
+        IntegrationHttpMethod: "POST"
+        IntegrationResponses:
+          -
+              StatusCode: 200
+        PassthroughBehavior: WHEN_NO_MATCH
+      MethodResponses:
+        -
+            StatusCode: 200
+            ResponseModels:
+                application/json: Empty
+
+  LineAIBotAPIStage:
+    Type: AWS::ApiGateway::Stage
+    Properties: 
+      DeploymentId: !Ref LineAIBotAPIDeployment
+      MethodSettings:
+        - DataTraceEnabled: true
+          LoggingLevel: "INFO"
+          ResourcePath: "/*"
+          HttpMethod: "*"
+          MetricsEnabled: true
+
+      RestApiId: !Ref LineAIBotAPI
+      StageName: ${self:custom.stage}
+      TracingEnabled: true
+
+  # Lambda Permission
+  LambdaPermission:
+    Type: "AWS::Lambda::Permission"
+    Properties:
+      Action: "lambda:invokeFunction"
+      FunctionName:
+        !GetAtt
+          - MigrateAeonUserLambdaFunction
+          - Arn
+      Principal: "apigateway.amazonaws.com"
+      SourceArn:
+        !Join
+          - ""
+          - - "arn:aws:execute-api"
+            - ":"
+            - !Ref AWS::Region
+            - ":"
+            - !Ref AWS::AccountId
+            - ":"
+            - !Ref LineAIBotAPI
+            - /*

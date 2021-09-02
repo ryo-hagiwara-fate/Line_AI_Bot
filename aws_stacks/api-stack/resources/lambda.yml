@@ -1,0 +1,7 @@
+executeAIBot:
+  runtime: nodejs12.x
+  handler: functions/index.handler
+  timeout: 30
+  layers:
+    - !Ref MylayerLambdaLayer
+  warmup: true
