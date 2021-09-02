@@ -2,7 +2,7 @@ Resources:
   LineAIBotAPI:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: ${self:custom.stageEnv}-${self:custom.stage}-aim-auth-api
+      Name: ${self:custom.stageEnv}-${self:custom.stage}-api
 
   LineAIBotAPIDeployment:
     Type: AWS::ApiGateway::Deployment
@@ -25,7 +25,7 @@ Resources:
       RestApiId: !Ref LineAIBotAPI
       ResourceId: !Ref LineAIBotAPIResource
       HttpMethod: "POST"
-      AuthorizationType: "AWS_IAM"
+      AuthorizationType: "NONE"
       Integration:
         Type: "AWS_PROXY"
         Uri: 
