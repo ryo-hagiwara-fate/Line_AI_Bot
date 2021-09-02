@@ -2,7 +2,7 @@ Resources:
   LineAIBotAPI:
     Type: AWS::ApiGateway::RestApi
     Properties:
-      Name: ${self:custom.stageEnv}-${self:custom.stage}-api
+      Name: ${self:custom.stageEnv}-${self:custom.stage}-${self:custom.appName}-api
 
   LineAIBotAPIDeployment:
     Type: AWS::ApiGateway::Deployment
