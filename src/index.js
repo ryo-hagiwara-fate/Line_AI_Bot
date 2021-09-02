@@ -1,10 +1,10 @@
-const Aws = require('aws-sdk');
+const aws = require('aws-sdk');
 const https = require('https');
-const s3 = new Aws.S3({ apiVersion: '2006-03-01',  signatureVersion: 'v4' });
+const s3 = new aws.S3({ apiVersion: '2006-03-01',  signatureVersion: 'v4' });
 const line = require('@line/bot-sdk');
-const Translate = new Aws.Translate({region: 'us-east-1'});
-const textract = new Aws.Textract({region: 'us-east-2'});
-const transcribeservice = new Aws.TranscribeService({apiVersion: '2017-10-26',region:"ap-northeast-1"});
+const Translate = new aws.Translate({region: 'us-east-1'});
+const textract = new aws.Textract({region: 'us-east-2'});
+const transcribeservice = new aws.TranscribeService({apiVersion: '2017-10-26',region:"ap-northeast-1"});
 
 //LINEアクセストークン設定
 const client = new line.Client({
@@ -73,7 +73,7 @@ exports.handler = async event => {
             const imagedate = await getImage(messageData.message.id);
             console.log(imagedate);
             await putS3Object(imagedate,messageData.message.id);
-            const url = "https://s3-ap-northeast-1.amazonaws.com/" + "hagi-line-bot-s3" + '/' + messageData.message.id + ".mp3"
+            const url = "https://s3-ap-northeast-1.amazonaws.com/" + process.env.S3_BUCKET_NAME + '/' + messageData.message.id + ".mp3"
             const params = {
                             LanguageCode: "ja-JP",                 
                             Media: {                        
@@ -83,6 +83,7 @@ exports.handler = async event => {
                             MediaFormat: "mp4",
                         };
                         
+            //　翻訳
             const result = await transcribeText(params);
             console.log(result);
            
@@ -228,7 +229,7 @@ function getImage(id){
 
 function putS3Object(data,id){
     var params = {
-        Bucket: 'hagi-line-bot-s3', // ←バケット名
+        Bucket: process.env.S3_BUCKET_NAME, // ←バケット名
         Key: id + ".mp3", // ←バケットに保存するファイル名
         Body: Buffer.concat(data)
     };
