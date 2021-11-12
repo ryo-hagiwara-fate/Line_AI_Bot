@@ -13,3 +13,5 @@
     - Cloudformation
    - 言語  
      - javascript  
+- サンプル  
+<img width="903" alt="Line_AI_Bot_サンプル" src="https://user-images.githubusercontent.com/70054701/141411687-1df9f356-c516-4167-ade7-07a6ecc7d25b.png">
